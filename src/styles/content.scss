@@ -580,7 +580,10 @@ html[data-ambientlight-enabled] {
       .bui-collapse-header,
       .bui-collapse-body,
       .bpx-player-dm-function,
-      .bpx-player-dm-wrap {
+      .bpx-player-dm-wrap,
+      // Chapters list that is opened from the chapter button in the control bar
+      .bpx-player-viewpoint,
+      .bpx-player-viewpoint-body {
         background-color: transparent !important;
       }
     }
