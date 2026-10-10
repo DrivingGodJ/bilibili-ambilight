@@ -1,6 +1,6 @@
 {
   "name": "bilibili-ambientlight",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "This browser extension adds ambient light to the videos you view on Bilibili. Based on Ambient light for YouTube by Wessel Kroos.",
   "repository": {
     "type": "git",
