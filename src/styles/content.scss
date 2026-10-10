@@ -617,6 +617,19 @@ html[data-ambientlight-enabled] {
       background: unquote('rgb(from var(--brand_blue) r g b / .35)') !important;
       box-shadow: inset 0 0 0 1px unquote('rgb(from var(--brand_blue) r g b / .7)');
     }
+
+    // Side panels of the new (next.js) bangumi/movie page layout.
+    // Their class names are hashed by CSS modules, so they are matched by prefix.
+    :is(section, div)[class*="SectionPanel_panel"],
+    div[class*="DanmukuBox_wrap"] {
+      background-color: var(--ytal-background) !important;
+      box-shadow: inset 0 0 0 1px var(--ytal-blend-border) !important;
+    }
+
+    // Episode number buttons of the episode list. The active button keeps its own color.
+    a[class*="EpisodeVirtualList_numberItem"]:not([class*="activeNumber"]) {
+      background-color: var(--ytal-background) !important;
+    }
   }
 
   /* Immersive: Blend in the tags of the video and the comment box */
@@ -644,6 +657,12 @@ html[data-ambientlight-enabled] {
       --bg3: var(--ytal-blend-input-background);
       --Ga1: var(--ytal-blend-border);
       --bili-comment-textarea-bg: transparent;
+    }
+
+    // The container of the new (next.js) bangumi/movie page layout has an opaque
+    // background which covers the ambient light.
+    .main-container {
+      background: transparent !important;
     }
   }
 
