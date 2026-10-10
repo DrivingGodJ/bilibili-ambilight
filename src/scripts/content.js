@@ -162,7 +162,11 @@ wrapErrorHandler(async function loadContentScript() {
       return;
     }
 
-    if (document.head.querySelector(`link[href="${url}"]`)) {
+    // Inject into <html> instead of <head>: on the bangumi/movie pages the React
+    // head manager (Next.js updateHead) removes every <head> child of the same
+    // tag type that it did not render this pass, which deletes a stylesheet
+    // injected at document_start.
+    if (document.querySelector(`link[href="${url}"]`)) {
       resolve(true);
       return;
     }
@@ -183,7 +187,7 @@ wrapErrorHandler(async function loadContentScript() {
         resolve(true);
       }.bind(this)
     );
-    document.head.appendChild(style);
+    document.documentElement.appendChild(style);
   });
   if (!chrome?.runtime?.id) {
     setResourceWarning();
