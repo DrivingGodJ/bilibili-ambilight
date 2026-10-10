@@ -288,6 +288,12 @@ html[data-ambientlight-enabled] {
     background: transparent !important;
   }
 
+  // The container of the new (next.js) bangumi/movie page layout has an opaque
+  // background which covers the ambient light.
+  .main-container {
+    background: transparent !important;
+  }
+
   /* Player */
 
   .bpx-player-container {
@@ -657,12 +663,6 @@ html[data-ambientlight-enabled] {
       --bg3: var(--ytal-blend-input-background);
       --Ga1: var(--ytal-blend-border);
       --bili-comment-textarea-bg: transparent;
-    }
-
-    // The container of the new (next.js) bangumi/movie page layout has an opaque
-    // background which covers the ambient light.
-    .main-container {
-      background: transparent !important;
     }
   }
 
