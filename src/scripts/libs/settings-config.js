@@ -385,7 +385,9 @@ const SettingsConfig = [
     label: '移除左右黑邊',
     description: '會使用：CPU 效能',
     type: 'checkbox',
-    default: false,
+    // Enabled by default, because Bilibili has a lot of 4:3 videos with the black bars encoded into the video.
+    // The top and bottom bars are not removed by default, because they often contain the subtitles.
+    default: true,
     defaultKey: 'V',
   },
   {
