@@ -37,9 +37,8 @@ import Theming from './theming';
 import Stats from './stats';
 import { injectedScript } from './messaging/injected';
 import { getNodeTreeString, getPageElems } from './errors/dom';
+import { getNoiseImageUrl } from './webext';
 import { t } from './i18n';
-
-const baseUrl = chrome.runtime.getURL('') || ''; // document.currentScript?.getAttribute('data-base-url') || ''
 
 export default class Ambientlight {
   innerStrength = 2;
@@ -2138,7 +2137,7 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
       document.documentElement,
       '--ytal-video-debanding-background',
       videoDebandingStrength
-        ? `url('${baseUrl}images/noise-${videoNoiseImageIndex}.png')`
+        ? `url('${getNoiseImageUrl(videoNoiseImageIndex)}')`
         : ''
     );
     setStyleProperty(
@@ -2164,7 +2163,7 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
       document.documentElement,
       '--ytal-debanding-background',
       debandingStrength
-        ? `url('${baseUrl}images/noise-${noiseImageIndex}.png')`
+        ? `url('${getNoiseImageUrl(noiseImageIndex)}')`
         : ''
     );
     setStyleProperty(
