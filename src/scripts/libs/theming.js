@@ -7,6 +7,7 @@ import { t } from './i18n';
 const THEME_LIGHT = -1;
 const THEME_DEFAULT = 0;
 const THEME_DARK = 1;
+const THEME_SYSTEM = 2;
 
 // Bilibili switches between the light and dark theme by:
 // - Toggling the night-mode class on the html element
@@ -22,11 +23,17 @@ export default class Theming {
     this.siteTheme = this.isDarkTheme() ? THEME_DARK : THEME_LIGHT;
 
     try {
-      matchMedia('(prefers-color-scheme: dark)').addEventListener(
+      this.systemThemeMediaQuery = matchMedia('(prefers-color-scheme: dark)');
+      this.systemThemeMediaQuery.addEventListener(
         'change',
         wrapErrorHandler(() => {
           // Give Bilibili the time to apply the system theme first
-          setTimeout(() => this.handleSiteThemeChange(), 100);
+          setTimeout(() => {
+            this.handleSiteThemeChange();
+            if (this.settings.theme === THEME_SYSTEM && this.isForcingTheme()) {
+              this.updateTheme();
+            }
+          }, 100);
         }, true)
       );
     } catch (ex) {
@@ -83,7 +90,9 @@ export default class Theming {
       disabled || this.settings.theme === THEME_DEFAULT
         ? this.siteTheme
         : this.settings.theme;
-    return toTheme === THEME_DARK;
+    return toTheme === THEME_SYSTEM
+      ? (this.systemThemeMediaQuery?.matches ?? this.siteTheme === THEME_DARK)
+      : toTheme === THEME_DARK;
   };
 
   shouldToggleTheme = () => {
@@ -150,6 +159,15 @@ export default class Theming {
 
       await this.toggleDarkTheme();
       this.updatingTheme = false;
+      // The system may have changed again while the theme update was pending.
+      if (
+        this.settings.theme === THEME_SYSTEM &&
+        this.isForcingTheme() &&
+        !this.themeToggleFailed &&
+        this.shouldToggleTheme()
+      ) {
+        await this.updateTheme();
+      }
     }.bind(this),
     true
   );
@@ -163,7 +181,7 @@ export default class Theming {
     await this.updateDocumentTheme(!wasDark);
 
     const isDark = this.isDarkTheme();
-    if (wasDark !== isDark) return;
+    if (wasDark !== isDark || !this.shouldToggleTheme()) return;
 
     this.themeToggleFailed = true;
     await storage.set('last-failed-theme-toggle', new Date().getTime());

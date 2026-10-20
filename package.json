@@ -1,24 +1,25 @@
 {
   "name": "bilibili-ambientlight",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "This browser extension adds ambient light to the videos you view on Bilibili. Based on Ambient light for YouTube by Wessel Kroos.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iceorange-dev/bilibili-ambilight.git"
+    "url": "git+https://github.com/DrivingGodJ/bilibili-ambilight.git"
   },
   "author": "iceorange-dev (Bilibili port), Wessel Kroos (original Ambient light for YouTube)",
   "license": "MIT",
-  "homepage": "https://github.com/iceorange-dev/bilibili-ambilight#readme",
+  "homepage": "https://github.com/DrivingGodJ/bilibili-ambilight#readme",
   "bugs": {
-    "url": "https://github.com/iceorange-dev/bilibili-ambilight/issues"
+    "url": "https://github.com/DrivingGodJ/bilibili-ambilight/issues"
   },
   "type": "module",
   "userscript": {
-    "namespace": "https://github.com/iceorange-dev/bilibili-ambilight",
-    "homepage": "https://github.com/iceorange-dev/bilibili-ambilight",
+    "namespace": "https://github.com/DrivingGodJ/bilibili-ambilight",
+    "homepage": "https://github.com/DrivingGodJ/bilibili-ambilight",
     "outputFile": "./bilibili-ambilight.user.js"
   },
   "scripts": {
+    "test": "node --experimental-vm-modules scripts/test-system-theme.mjs",
     "build:manifest": "node manifest-copy.js",
     "build:html": "copyfiles -u 1 src/options.html dist",
     "build:images": "copyfiles -u 2 src/images/* dist/images",

@@ -163,6 +163,7 @@ export default {
   '解碼': 'Decoded',
   '解碼影格率': 'Decoded frame rate',
   '跟隨 B 站': 'Follow Bilibili',
+  '跟隨系統': 'Follow system',
   '跟隨瀏覽器': 'Follow browser',
   '載入失敗': 'Load failed',
   '載入失敗。\n{message}': 'Load failed.\n{message}',

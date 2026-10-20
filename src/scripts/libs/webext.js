@@ -89,7 +89,7 @@ export const getVersion = () => {
 export const getHomepageUrl = () =>
   gm.info?.script?.homepageURL ||
   gm.info?.script?.namespace ||
-  'https://github.com/iceorange-dev/bilibili-ambilight';
+  'https://github.com/DrivingGodJ/bilibili-ambilight';
 
 // ---------------------------------------------------------------------------
 // Settings storage (chrome.storage compatible)

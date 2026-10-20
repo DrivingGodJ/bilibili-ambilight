@@ -822,12 +822,13 @@ const SettingsConfig = [
     manualinput: false,
     default: 1,
     min: -1,
-    max: 1,
+    max: 2,
     step: 1,
     snapPoints: [
       { value: -1, label: '淺色' },
       { value: 0, label: '跟隨 B 站' },
       { value: 1, label: '深色' },
+      { value: 2, label: '跟隨系統' },
     ],
   },
   {

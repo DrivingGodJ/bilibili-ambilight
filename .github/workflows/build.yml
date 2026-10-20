@@ -35,6 +35,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Test system theme switching
+        run: npm test
+
       - name: Build and package
         run: |
           name="bilibili-ambilight-$(node -p "require('./package.json').version")"
@@ -82,6 +85,8 @@ jobs:
             --generate-notes \
             --notes "$(cat <<'EOF'
           ## 安裝
+
+          本版新增「跟隨系統」深淺色主題：請在「基本設定 → 外觀（主題）」選擇「跟隨系統」。系統主題變更會自動同步，不需重新整理；原有主題選項與預設值保留。
 
           **Chrome / Edge**：下載 `-chrome.zip` 並解壓縮，開啟 `chrome://extensions`，打開「開發人員模式」，點「載入未封裝項目」並選擇解壓縮後的資料夾。
 

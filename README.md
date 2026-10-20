@@ -1,5 +1,9 @@
 # Bilibili 環境光（Ambient light for Bilibili）
 
+此 fork 基於 [iceorange-dev/bilibili-ambilight](https://github.com/iceorange-dev/bilibili-ambilight)，新增「跟隨系統」深淺色主題。請在「基本設定 → 外觀（主題）」選擇「跟隨系統」啟用；原有主題選項與預設值保留。
+
+[下載最新版](https://github.com/DrivingGodJ/bilibili-ambilight/releases/latest)：Chrome / Edge 請下載 `-chrome.zip` 並解壓縮，在擴充功能頁開啟「開發人員模式」，再載入解壓縮後的資料夾。
+
 在 Bilibili 影片周圍加上環境光（Ambilight）效果。同一個原始碼可以建置成兩種版本：
 
 - **瀏覽器擴充功能**（Chrome / Edge / Firefox）
@@ -24,9 +28,9 @@
 
 1. 安裝使用者腳本管理器：[Tampermonkey](https://www.tampermonkey.net/)（Chrome / Edge / Firefox）、[Violentmonkey](https://violentmonkey.github.io/) 或 Greasemonkey
 2. 安裝腳本：
-   - 直接點安裝網址（Raw）：`https://raw.githubusercontent.com/iceorange-dev/bilibili-ambilight/userscript/bilibili-ambilight.user.js`
+   - 直接點安裝網址（Raw）：`https://raw.githubusercontent.com/DrivingGodJ/bilibili-ambilight/userscript/bilibili-ambilight.user.js`
      - 如果連不上 `raw.githubusercontent.com`（例如在中國大陸），可以改用 jsDelivr 鏡像：
-       `https://cdn.jsdelivr.net/gh/iceorange-dev/bilibili-ambilight@userscript/bilibili-ambilight.user.js`
+       `https://cdn.jsdelivr.net/gh/DrivingGodJ/bilibili-ambilight@userscript/bilibili-ambilight.user.js`
      - 管理器會從安裝時的網址檢查更新，所以用哪個網址安裝，之後就會從哪個網址更新
      - `userscript` 分支只放正式版本：每次發佈新版時由 CI 建置並更新
    - 或自己建置（見下方），再把 `bilibili-ambilight.user.js` 拖進瀏覽器，或在管理器中新增腳本後貼上內容（這樣安裝的不會自動更新）
@@ -47,7 +51,7 @@ Chrome / Chromium 核心的瀏覽器請確認已開啟擴充功能的「開發�
 需要 Node.js 22 以上。
 
 ```sh
-git clone https://github.com/iceorange-dev/bilibili-ambilight.git
+git clone https://github.com/DrivingGodJ/bilibili-ambilight.git
 cd bilibili-ambilight
 npm install
 npm run build
@@ -69,7 +73,7 @@ Firefox：改用 `npm run build:firefox` 建置（Firefox 的 manifest 需要 `b
   - `B`：自動移除上下黑邊（預設關閉，因為燒在上下黑邊裡的字幕也會被裁掉）
   - `V`：自動移除左右黑邊（預設開啟）
   - `H`：將影片放大填滿移除黑邊後的空間
-- 預設在開啟環境光時會把頁面切換成深色主題。可在「基本設定 → 外觀（主題）」改成「跟隨 B 站」或「淺色」
+- 預設在開啟環境光時會把頁面切換成深色主題。可在「基本設定 → 外觀（主題）」改成「跟隨 B 站」、「淺色」或「跟隨系統」。選擇「跟隨系統」後，頁面會依系統的深淺色設定自動切換，無需重新整理；停用環境光時會還原 B 站原有主題。
 - 設定選單的「沉浸」區塊：
   - 頁首與搜尋框融入背景：頁面在最上方時導覽列透明，往下捲動後變成半透明模糊；搜尋框融入背景（預設開啟）
   - 寬螢幕模式時隱藏頁首：寬螢幕模式且在頁面最上方時隱藏導覽列
