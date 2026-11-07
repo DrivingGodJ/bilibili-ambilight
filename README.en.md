@@ -2,63 +2,37 @@
 
 # Bilibili Ambilight
 
-Add ambient lighting around Bilibili videos, available as a browser extension or a userscript.
+Let the colors in a video extend beyond the player. As the picture changes, ambient light moves with it, blending the video into the surrounding page.
 
-[Download](https://github.com/DrivingGodJ/bilibili-ambilight/releases/latest) · [Detailed usage and development reference (Traditional Chinese)](docs/readme-reference.zh-TW.md)
+## Light that follows the picture
 
-This community fork of [iceorange-dev/bilibili-ambilight](https://github.com/iceorange-dev/bilibili-ambilight) adds a theme that follows system appearance in real time. The Bilibili port originates from Wessel Kroos's [Ambient light for YouTube™](https://github.com/WesselKroos/youtube-ambilight). This project is not affiliated with Bilibili or YouTube.
+Colors sampled from the playing video create a dynamic glow around the player. It works with regular videos, multipart videos, series and playlists, adapting as you switch between normal, wide and fullscreen viewing.
 
-## Features
+## Bring the page into the scene
 
-- **Dynamic lighting** for regular videos, multipart videos, series and playlists, including wide, web-fullscreen and fullscreen modes.
-- **Themes and immersion** with headers, comment controls and sidebars blending into the background, plus live system appearance tracking.
-- **Picture controls** including black-bar detection, zoom and configurable keyboard shortcuts.
-- **Two distributions**: Chrome / Edge / Firefox extensions and userscripts for managers such as Tampermonkey.
-- **Five interface languages**: Traditional Chinese, Simplified Chinese, English, Japanese and Korean.
+The header, comment controls and sidebar can blend into the background too. Adjust their opacity to keep as much of the surrounding interface as you prefer.
 
-## Quick start
+Choose a theme that follows Bilibili, stays light or dark, or follows the system. System mode responds to appearance changes in real time; disabling ambient light restores Bilibili's original theme.
 
-**Chrome / Edge:** download and extract the `-chrome.zip` package from Releases. Enable Developer mode in the extensions page, choose Load unpacked, select the extracted directory and reload a Bilibili video.
+## Watch your way
 
-**Userscript:** install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/), then open the [release script](https://raw.githubusercontent.com/DrivingGodJ/bilibili-ambilight/userscript/bilibili-ambilight.user.js). A [jsDelivr mirror](https://cdn.jsdelivr.net/gh/DrivingGodJ/bilibili-ambilight@userscript/bilibili-ambilight.user.js) is available if Raw is inaccessible. Updates use the address chosen at installation. Chromium browsers also need userscript execution enabled as instructed by the manager.
+- Detect black bars, then crop and zoom when needed.
+- Adjust the effect from the player or toggle it with keyboard shortcuts.
+- Use an extension or userscript, with Simplified Chinese, Traditional Chinese, English, Japanese and Korean interfaces.
 
-See the development section and detailed reference for Firefox temporary loading and platform builds.
+## Try it
 
-## Usage
+[Download the extension](https://github.com/DrivingGodJ/bilibili-ambilight/releases/latest) · [Install the userscript](https://raw.githubusercontent.com/DrivingGodJ/bilibili-ambilight/userscript/bilibili-ambilight.user.js)
 
-Open settings through the ambient-light icon to the left of Bilibili's gear. Select Follow system under Basic settings → Appearance (theme). Disabling ambient lighting restores Bilibili's original theme.
+See the [user guide](docs/GUIDE.en.md) for Chrome, Edge and Firefox installation and userscript-manager setup.
 
-| Default key | Action |
+## Explore further
+
+| Topic | Documentation |
 | --- | --- |
-| `G` | Toggle ambient lighting |
-| `B` | Toggle top/bottom cropping; off by default |
-| `V` | Toggle left/right cropping; on by default |
-| `H` | Zoom to fill the cropped area |
+| Installation, settings and shortcuts | [User guide](docs/GUIDE.en.md) |
+| Builds, localization and complete features | [Detailed reference (Traditional Chinese)](docs/readme-reference.zh-TW.md) |
+| Privacy and data | [Privacy policy](PRIVACY-POLICY.md) |
+| Feedback | [Issues](https://github.com/DrivingGodJ/bilibili-ambilight/issues) |
 
-DRM videos and some HEVC players using `<bwp-video>` are unsupported. Cropping can remove burned-in subtitles. The userscript uses its manager's menu for settings import, export and reset; it has no extension toolbar or options page.
-
-## Development and checks
-
-Requires Node.js **22.5.1+**.
-
-```bash
-git clone https://github.com/DrivingGodJ/bilibili-ambilight.git
-cd bilibili-ambilight
-npm ci
-npm test
-npm run build
-```
-
-Load `dist/` in Chrome / Edge. For Firefox, run `npm run build:firefox` and temporarily load `dist/manifest.json` through `about:debugging#/runtime/this-firefox`. Run `npm run build:userscript` to generate `bilibili-ambilight.user.js`; do not edit build output manually.
-
-Automated tests do not replace installation in a real browser or Windows system-theme switching checks.
-
-## Documentation and support
-
-- [Usage, localization and source layout (Traditional Chinese)](docs/readme-reference.zh-TW.md)
-- [Privacy policy](PRIVACY-POLICY.md)
-- [Report an issue](https://github.com/DrivingGodJ/bilibili-ambilight/issues)
-
-## License and credits
-
-[MIT License](LICENSE). Wessel Kroos's original copyright, iceorange-dev's Bilibili-port copyright and the original Git history are preserved. This fork adds system-theme support. Sentry error reporting has been removed.
+A community fork of [iceorange-dev's Bilibili port](https://github.com/iceorange-dev/bilibili-ambilight), originating from [Wessel Kroos's work](https://github.com/WesselKroos/youtube-ambilight). [MIT License](LICENSE); not affiliated with Bilibili or YouTube.
