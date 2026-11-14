@@ -765,6 +765,53 @@ const workerCode = function () {
     };
   }
 
+  const inspectBorder = (depth, end) => {
+    const { data, width, height } = image.imageData;
+    let lo = width, hi = -1, near = height, far = -1, count = 0, bright = 0;
+    for (let k = 0; k < depth; k++) {
+      for (let along = 0; along < width; along++) {
+        const i = ((end ? height - 1 - k : k) * width + along) * 4;
+        const value = Math.max(data[i], data[i + 1], data[i + 2]);
+        // At the confirmed edge, one blended codec/resampling row can be visible.
+        // Only elide its dim pixels; do not discard character strokes there.
+        if (data[i + 3] === 255 && value < (k === depth - 1 ? 46 : 24)) continue;
+        lo = Math.min(lo, along);
+        hi = Math.max(hi, along);
+        near = Math.min(near, k);
+        far = Math.max(far, k);
+        count++;
+        if (value >= 64) bright++;
+      }
+    }
+    if (!count) return {};
+    const w = hi - lo + 1, h = far - near + 1;
+    const cornerLogo = !end && h <= depth * .8 && (hi < width * .27 || lo >= width * .73);
+    if (cornerLogo && count <= width * depth * .15) return {};
+
+    // Separate bright glyphs from an already detected black strip.
+    const center = (lo + hi) / (2 * width);
+    if (
+      bright < 16 || bright < count * .35 || h < 4 || w < h * 1.15 ||
+      count > width * depth * .28 || count > w * h * .9 ||
+      center < .30 || center > .70 || lo < width * .07 || hi > width * .93
+    ) return {};
+    if (far >= depth - 1 || h > depth * .9) return { protectedContent: true };
+
+    const yStart = end ? height - 1 - far : near;
+    const pixels = new Uint8ClampedArray(w * h * 4);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const src = ((yStart + y) * width + lo + x) * 4;
+        const alpha = Math.max(data[src], data[src + 1], data[src + 2]);
+        if (alpha < 24) continue;
+        const dst = (y * w + x) * 4;
+        for (let c = 0; c < 3; c++) pixels[dst + c] = data[src + c] * 255 / alpha;
+        pixels[dst + 3] = alpha;
+      }
+    }
+    return { caption: { x: lo / width, y: yStart / height, w, h, width, height, pixels, bottom: end } };
+  };
+
   const workerDetectBarSizeLinesX = new Uint16Array(5);
   try {
     const workerDetectBarSize = (
@@ -1078,11 +1125,35 @@ const workerCode = function () {
           return;
         }
 
+        const subtitleStrips = [];
+        if (horizontalBarSizeInfo) {
+          const depth = Math.ceil(
+            Math.max(horizontalBarSizeInfo.percentage || 0, currentHorizontalPercentage || 0) *
+              image.height / 100
+          );
+          if (depth >= 7) {
+            for (const [end, edges] of [
+              [false, horizontalBarSizeInfo.topEdges],
+              [true, horizontalBarSizeInfo.bottomEdges],
+            ]) {
+              const validRows = Array.from(edges || [])
+                .filter((edge) => !edge.deviates)
+                .map((edge) => edge.yIndex - Number(end))
+                .sort((a, b) => a - b);
+              const pictureRow = validRows[Math.floor(validRows.length / 2)];
+              // Leave a few samples for codec ringing along the picture boundary.
+              const stripDepth = Math.min(depth, pictureRow - 3);
+              if (stripDepth >= 7) subtitleStrips.push(inspectBorder(stripDepth, end));
+            }
+          }
+        }
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         this.postMessage({
           id,
           horizontalBarSizeInfo,
           verticalBarSizeInfo,
+          subtitleStrips,
         });
       } catch (ex) {
         if (id === globalRunId) {
@@ -1131,6 +1202,7 @@ export default class BarDetection {
       vertical: undefined,
     };
     this.changes = [];
+    this.hadSubtitles = false;
   };
 
   clear = () => {
@@ -1667,9 +1739,12 @@ export default class BarDetection {
                 };
               }
 
-              if (barsChanged) {
-                callback(horizontalPercentage, verticalPercentage);
+              const subtitles = e.data.subtitleStrips;
+              const hasSubtitles = subtitles.some((strip) => strip.caption || strip.protectedContent);
+              if (barsChanged || hasSubtitles || this.hadSubtitles) {
+                callback(horizontalPercentage, verticalPercentage, subtitles);
               }
+              this.hadSubtitles = hasSubtitles;
 
               // console.log(e.data.id, 'onmessage received', barsChanged, horizontalPercentage, verticalPercentage)
               resolve();

@@ -3,11 +3,7 @@ import { injectedScript } from './messaging/injected';
 import ErrorReporter from './errors/reporter';
 import { storage } from './storage';
 import { t } from './i18n';
-
-const THEME_LIGHT = -1;
-const THEME_DEFAULT = 0;
-const THEME_DARK = 1;
-const THEME_SYSTEM = 2;
+import { THEME_DARK, THEME_LIGHT, THEME_SYSTEM } from './settings-config';
 
 // Bilibili switches between the light and dark theme by:
 // - Toggling the night-mode class on the html element
@@ -41,6 +37,7 @@ export default class Theming {
     }
 
     let themeCorrections = 0;
+    let lastCorrection = 0;
     this.themeObserver = new MutationObserver(
       wrapErrorHandler(
         function themeMutation() {
@@ -51,10 +48,10 @@ export default class Theming {
           }
           if (!this.shouldToggleTheme()) return;
 
-          // Bilibili has changed the theme back. Correct it a few times to prevent an infinite loop
-          themeCorrections++;
-          this.updateTheme();
-          if (themeCorrections === 5) this.themeObserver.disconnect();
+          // Bound rapid corrections without giving up for the rest of the tab.
+          if (Date.now() - lastCorrection > 1000) themeCorrections = 0;
+          lastCorrection = Date.now();
+          if (themeCorrections++ < 5) this.updateTheme();
         }.bind(this),
         true
       )
@@ -62,6 +59,12 @@ export default class Theming {
     this.themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class'],
+    });
+    this.themeObserver.observe(document.head, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['href'],
     });
   }
 
@@ -74,8 +77,7 @@ export default class Theming {
   // Whether the ambient light has changed the theme of the page to the theme setting
   isForcingTheme = () =>
     this.settings.enabled &&
-    (!this.ambientlight.isHidden || this.ambientlight.keepPageStyle) &&
-    this.settings.theme !== THEME_DEFAULT;
+    (!this.ambientlight.isHidden || this.ambientlight.keepPageStyle);
 
   isDarkTheme = () =>
     document.documentElement.classList.contains('night-mode');
@@ -86,28 +88,23 @@ export default class Theming {
         ? !this.settings.enabled ||
           (this.ambientlight.isHidden && !this.ambientlight.keepPageStyle)
         : !enabledAndVisible;
-    const toTheme =
-      disabled || this.settings.theme === THEME_DEFAULT
-        ? this.siteTheme
-        : this.settings.theme;
+    const toTheme = disabled ? this.siteTheme : this.settings.theme;
     return toTheme === THEME_SYSTEM
       ? (this.systemThemeMediaQuery?.matches ?? this.siteTheme === THEME_DARK)
       : toTheme === THEME_DARK;
   };
 
-  shouldToggleTheme = () => {
-    const toDark = this.shouldBeDarkTheme();
-    return !(this.isDarkTheme() === toDark || (toDark && !isWatchPageUrl()));
+  shouldToggleTheme = (toDark = this.shouldBeDarkTheme()) => {
+    if (toDark && !isWatchPageUrl()) return false;
+    const href = document.getElementById('__css-map__')?.getAttribute('href');
+    const stylesheetTheme = href?.match(/\/(light|dark)\.css(?:[?#]|$)/)?.[1];
+    return this.isDarkTheme() !== toDark ||
+      (stylesheetTheme !== undefined && (stylesheetTheme === 'dark') !== toDark);
   };
 
   updateTheme = wrapErrorHandler(
     async function updateTheme(fromSettings = false) {
-      if (
-        this.updatingTheme ||
-        (!fromSettings && this.settings.theme === THEME_DEFAULT) ||
-        !this.shouldToggleTheme()
-      )
-        return;
+      if (this.updatingTheme || !this.shouldToggleTheme()) return;
 
       this.updatingTheme = true;
 
@@ -134,11 +131,11 @@ export default class Theming {
         if (lastFailedThemeToggle) {
           const now = new Date().getTime();
           const withinThresshold = now - 10000 < lastFailedThemeToggle;
-          if (withinThresshold) {
+          if (withinThresshold && !fromSettings) {
             this.settings.setWarning(
               t(
-                '上一次切換主題失敗。為了避免頁面不斷重新整理，自動切換成{theme}外觀的功能暫停 10 秒。\n\n如果一直失敗，可以把「外觀（主題）」設為「跟隨 B 站」來永久停用自動切換。',
-                { theme: this.isDarkTheme() ? t('淺色') : t('深色') }
+                '上一次切換主題失敗。為了避免頁面不斷重新整理，自動切換成{theme}外觀的功能暫停 10 秒。',
+                { theme: this.shouldBeDarkTheme() ? t('深色') : t('淺色') }
               )
             );
             this.updatingTheme = false;
@@ -157,17 +154,14 @@ export default class Theming {
         }
       }
 
-      await this.toggleDarkTheme();
-      this.updatingTheme = false;
-      // The system may have changed again while the theme update was pending.
-      if (
-        this.settings.theme === THEME_SYSTEM &&
-        this.isForcingTheme() &&
-        !this.themeToggleFailed &&
-        this.shouldToggleTheme()
-      ) {
-        await this.updateTheme();
+      const toDark = this.shouldBeDarkTheme();
+      try {
+        await this.applyTheme(toDark);
+      } finally {
+        this.updatingTheme = false;
       }
+      // Apply the latest mode if the selected or system appearance changed while waiting.
+      if (toDark !== this.shouldBeDarkTheme()) await this.updateTheme(fromSettings);
     }.bind(this),
     true
   );
@@ -176,21 +170,20 @@ export default class Theming {
     await injectedScript.postAndReceiveMessage('update-theme', toDark);
   }
 
-  async toggleDarkTheme() {
+  async applyTheme(toDark) {
     const wasDark = this.isDarkTheme();
-    await this.updateDocumentTheme(!wasDark);
+    await this.updateDocumentTheme(toDark);
 
-    const isDark = this.isDarkTheme();
-    if (wasDark !== isDark || !this.shouldToggleTheme()) return;
+    if (toDark !== this.shouldBeDarkTheme() || !this.shouldToggleTheme(toDark)) return;
 
     this.themeToggleFailed = true;
     await storage.set('last-failed-theme-toggle', new Date().getTime());
     this.settings.setWarning(
       t(
-        '無法把頁面主題從{from}切換成{to}。\n\n如果一直失敗，可以把「外觀（主題）」設為「跟隨 B 站」來永久停用自動切換。',
+        '無法把頁面主題從{from}切換成{to}。',
         {
           from: wasDark ? t('深色') : t('淺色'),
-          to: wasDark ? t('淺色') : t('深色'),
+          to: toDark ? t('深色') : t('淺色'),
         }
       )
     );

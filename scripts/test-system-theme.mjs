@@ -18,8 +18,10 @@ async function createHarness({
   hidden = false,
   keepPageStyle = false,
   mediaApiFails = false,
+  stylesheetDark = siteDark,
 } = {}) {
   let dark = siteDark;
+  let darkStylesheet = stylesheetDark;
   let timerId = 0;
   let mediaCalls = 0;
   let messageGate;
@@ -37,17 +39,24 @@ async function createHarness({
       listeners.push(listener);
     },
   };
-  const setDark = (value) => {
-    if (dark === value) return;
-    dark = value;
+  const notifyThemeMutation = () => {
     queueMicrotask(() => {
       for (const observer of observers) {
         if (observer.connected) observer.callback();
       }
     });
   };
+  const setDark = (value) => {
+    if (dark === value) return;
+    dark = value;
+    notifyThemeMutation();
+  };
   const context = vm.createContext({
     document: {
+      head: {},
+      getElementById: (id) => id === '__css-map__' && {
+        getAttribute: () => `//s1.hdslb.com/theme/${darkStylesheet ? 'dark' : 'light'}.css`,
+      },
       documentElement: {
         classList: { contains: (name) => name === 'night-mode' && dark },
       },
@@ -86,6 +95,7 @@ async function createHarness({
           messageGate = undefined;
           if (gate && !gate.afterApply) await gate.promise;
           setDark(toDark);
+          darkStylesheet = toDark;
           if (gate?.afterApply) await gate.promise;
         },
       },
@@ -100,6 +110,7 @@ async function createHarness({
       },
     },
     './i18n': { t: (key) => key },
+    './settings-config': { THEME_LIGHT: -1, THEME_DARK: 1, THEME_SYSTEM: 2 },
   };
   const module = new vm.SourceTextModule(source, { context });
   await module.link((specifier) => {
@@ -125,6 +136,10 @@ async function createHarness({
     get mediaCalls() { return mediaCalls; },
     settle,
     setSiteDark: setDark,
+    setDarkStylesheet(value) {
+      darkStylesheet = value;
+      notifyThemeMutation();
+    },
     async changeSystem(value) {
       mediaQuery.matches = value;
       for (const listener of listeners) listener({ matches: value });
@@ -165,8 +180,8 @@ test('an open page follows light to dark and back without reloading', async () =
   assert.deepEqual(h.messages, [true, false]);
 });
 
-test('the original light, site, and dark modes ignore system changes', async () => {
-  for (const theme of [-1, 0, 1]) {
+test('the fixed light and dark modes ignore system changes', async () => {
+  for (const theme of [-1, 1]) {
     const h = await createHarness({ theme });
     await h.theming.updateTheme();
     const messages = [...h.messages];
@@ -175,6 +190,31 @@ test('the original light, site, and dark modes ignore system changes', async () 
     assert.equal(h.dark, theme === 1);
     assert.deepEqual(h.messages, messages);
   }
+});
+
+test('manual light repairs a dark site stylesheet even when the class is already light', async () => {
+  const h = await createHarness({ theme: -1, systemDark: true, stylesheetDark: true });
+  await h.theming.updateTheme(true);
+  assert.equal(h.dark, false);
+  assert.equal(h.theming.shouldToggleTheme(), false);
+  assert.deepEqual(h.messages, [false]);
+  h.setDarkStylesheet(true);
+  await h.settle();
+  assert.equal(h.theming.shouldToggleTheme(), false);
+  assert.deepEqual(h.messages, [false, false]);
+});
+
+test('manual light wins if selected while a system dark update is pending', async () => {
+  const h = await createHarness({ systemDark: true });
+  const release = h.deferNextMessage();
+  const pending = h.theming.updateTheme();
+  await h.settle();
+  h.ambientlight.settings.theme = -1;
+  await h.theming.updateTheme(true);
+  release();
+  await pending;
+  assert.equal(h.dark, false);
+  assert.deepEqual(h.messages, [true, false]);
 });
 
 test('disabling or fully hiding restores the original site appearance', async () => {
@@ -230,7 +270,7 @@ test('a system change during an unfinished update settles to the latest value', 
   assert.deepEqual(h.messages, [true, false]);
 });
 
-test('settings import and export preserve the new mode and existing theme values', async () => {
+test('settings import and export preserve the three modes and migrate the old site mode', async () => {
   const context = vm.createContext({});
   const stored = {};
   const modules = new Map();
@@ -257,12 +297,16 @@ test('settings import and export preserve the new mode and existing theme values
   }
   const module = await load('./settings-io');
   await module.evaluate();
+  const snaps = modules.get('./settings-config').namespace.default.find(({name}) => name === 'theme').snapPoints;
+  assert.deepEqual(Array.from(snaps, ({value}) => value), [2, -1, 1]);
   for (const theme of [-1, 0, 1, 2]) {
+    const normalized = theme === 0 ? 2 : theme;
     const result = module.namespace.parseSettingsImport(JSON.stringify({ theme }));
-    assert.equal(result.settings['setting-theme'], theme);
+    assert.equal(result.settings['setting-theme'], normalized);
     assert.equal(result.warnings.length, 0);
     Object.assign(stored, result.settings);
-    assert.equal((await module.namespace.buildSettingsExportObject()).theme, theme);
+    stored['setting-theme'] = theme;
+    assert.equal((await module.namespace.buildSettingsExportObject()).theme, normalized);
   }
 });
 
@@ -276,6 +320,7 @@ test('a site update matching the latest system theme is not mistaken for failure
 
   await h.changeSystem(false);
   h.setSiteDark(false);
+  h.setDarkStylesheet(false);
   await h.settle();
   assert.equal(h.dark, h.theming.shouldBeDarkTheme());
   release();

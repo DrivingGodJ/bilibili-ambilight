@@ -5,9 +5,9 @@
 // @name:en      Ambient light for Bilibili
 // @namespace    {{namespace}}
 // @version      {{version}}
-// @description  在 Bilibili 影片周圍加上環境光（Ambilight），看影片更有沉浸感！（非官方，改編自 Wessel Kroos 的 Ambient light for YouTube）
-// @description:zh-CN  在 Bilibili 视频周围加上环境光（Ambilight），看视频更有沉浸感！（非官方，改编自 Wessel Kroos 的 Ambient light for YouTube）
-// @description:en  Adds ambient light (ambilight) around the video you are watching on Bilibili. Unofficial port of Ambient light for YouTube by Wessel Kroos.
+// @description  讓 Bilibili 影片的色彩延伸到播放器四周。支援自動去黑邊、等比縮放與跟隨系統深淺色。（非官方）
+// @description:zh-CN  让 Bilibili 视频的色彩延伸到播放器四周。支持自动去黑边、等比缩放和跟随系统深浅色。（非官方）
+// @description:en  Extends video colors around the Bilibili player with ambient light. Includes automatic black-bar removal, proportional zoom, and system-aware themes. Unofficial.
 // @author       iceorange-dev (Bilibili port), Wessel Kroos (original Ambient light for YouTube)
 // @license      MIT
 // @homepageURL  {{homepage}}

@@ -4,7 +4,7 @@
  * Used by the options page of the extension (src/scripts/options.js) and by
  * the userscript menu (src/scripts/userscript-menu.js).
  */
-import SettingsConfig from './settings-config';
+import SettingsConfig, { normalizeTheme, THEME_SYSTEM } from './settings-config';
 import { storage } from './storage';
 import { t } from './i18n';
 
@@ -36,7 +36,9 @@ export const buildSettingsExportObject = async () => {
     );
     if (!existsInConfig) continue;
 
-    exportObject[name] = storageData[key];
+    exportObject[name] = name === 'theme'
+      ? normalizeTheme(Number(storageData[key]))
+      : storageData[key];
   }
 
   if (!Object.keys(exportObject).length)
@@ -145,6 +147,7 @@ export const parseSettingsImport = (jsonString) => {
       }
     }
 
+    if (name === 'theme' && value === 0) value = THEME_SYSTEM;
     settings[`${SETTING_PREFIX}${name}`] = value;
   }
 

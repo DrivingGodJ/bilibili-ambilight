@@ -194,6 +194,7 @@ export default class Ambientlight {
     this.resetVideoParentElemStyle();
     this.initPlayerElems(videoElem);
     this.initVideoElem(videoElem, false);
+    await this.resetAutoCrop(false);
 
     if (previousVideoPlayerElem !== this.videoPlayerElem) {
       this.observePlayerElems();
@@ -415,6 +416,7 @@ export default class Ambientlight {
     }
 
     this.lastVideoElemSrc = this.videoElem.src;
+    await this.resetAutoCrop(false);
     await this.start();
 
     return true;
@@ -466,6 +468,8 @@ export default class Ambientlight {
         this.lastUpdateStatsTime = performance.now();
 
         this.barDetection.cancel();
+        this.burnedCaptionMasks = [];
+        if (this.burnedCaptionLayer) this.burnedCaptionLayer.hidden = true;
 
         // Prevent any old frames from being drawn
         this.buffersCleared = true;
@@ -482,6 +486,7 @@ export default class Ambientlight {
         }
 
         await this.optionalFrame();
+        if (this.videoElem.paused) await this.scheduleBarSizeDetection();
       },
       loadstart: () => {
         this.settings.setWarning(undefined, undefined, undefined, 'encrypted');
@@ -509,6 +514,7 @@ export default class Ambientlight {
         this.checkGetImageDataAllowed(); // Re-check after crossOrigin attribute has been applied
         await this.updateHdr();
         await this.initVideoIfSrcChanged();
+        if (this.videoElem.paused) await this.scheduleBarSizeDetection();
       },
       playing: async () => {
         this.chromiumBugVideoJitterWorkaround?.update?.();
@@ -519,6 +525,7 @@ export default class Ambientlight {
       },
       pause: () => {
         this.chromiumBugVideoJitterWorkaround?.update?.();
+        return this.scheduleBarSizeDetection();
       },
       ended: () => {
         this.chromiumBugVideoJitterWorkaround?.update?.();
@@ -528,8 +535,9 @@ export default class Ambientlight {
         this.scheduledNextFrame = false;
         this.resetVideoParentElemStyle(); // Prevent visible video element above player because of the modified style attribute
       },
-      emptied: () => {
+      emptied: async () => {
         if (!this.settings.enabled || !this.isOnVideoPage) return;
+        await this.resetAutoCrop(false);
         if (this.clearTime < performance.now() - 500) this.clear();
         this.scheduledNextFrame = false;
       },
@@ -945,14 +953,9 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
   onKeyPressed = async (key) => {
     if (key === ' ') return;
 
-    const keys = this.settings.getKeys();
-    if (key === keys.detectHorizontalBarSizeEnabled)
-      this.settings.clickUI('detectHorizontalBarSizeEnabled');
-    if (key === keys.detectVerticalBarSizeEnabled)
-      this.settings.clickUI('detectVerticalBarSizeEnabled');
-    if (key === keys.detectVideoFillScaleEnabled)
-      this.settings.clickUI('detectVideoFillScaleEnabled');
-    if (key === keys.enabled) await this.toggleEnabled();
+    if (key === 'B' && !this.settings.menuElem.classList.contains('is-visible'))
+      await this.settings.toggleAutoCrop();
+    if (key === 'G') await this.toggleEnabled();
   };
 
   async toggleEnabled(enabled) {
@@ -963,7 +966,7 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
     } else {
       await this.disable();
     }
-    this.settings.displayBezelForSetting('enabled');
+    this.settings.displayBezelForSetting();
   }
 
   checkGetImageDataAllowed() {
@@ -1290,20 +1293,16 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
     };
   }
 
-  async resetSettingsIfNeeded() {
-    const videoPath = `${location.pathname}${location.search}`;
-    if (!this.prevVideoPath || videoPath !== this.prevVideoPath) {
-      if (this.settings.horizontalBarsClipPercentageReset) {
-        const horizontalBarChanged = this.setHorizontalBars(0);
-        const verticalBarChanged = this.setVerticalBars(0);
-        if (horizontalBarChanged || verticalBarChanged) {
-          this.sizesChanged = true;
-          await this.optionalFrame();
-        }
-      }
-    }
-    this.prevVideoPath = videoPath;
-    await this.settings.updateHdr();
+  async resetAutoCrop(draw = true) {
+    this.barDetection?.reset();
+    this.burnedCaptionMasks = [];
+    this.keepHorizontalBars = false;
+    this.hasBurnedCaptions = false;
+    this.setHorizontalBars(0);
+    this.setVerticalBars(0);
+    this.resetVideoParentElemStyle();
+    this.sizesChanged = true;
+    if (draw) await this.optionalFrame();
   }
 
   setHorizontalBars(percentage) {
@@ -1382,6 +1381,8 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
     const videoAreaElem = this.videoAreaElem ?? this.videoPlayerElem;
     if (
       this.settings.detectVideoFillScaleEnabled &&
+      !this.hasBurnedCaptions &&
+      (this.settings.horizontalBarsClipPercentage || this.settings.verticalBarsClipPercentage) &&
       videoContentRect.width &&
       videoContentRect.height &&
       videoAreaElem?.offsetWidth &&
@@ -1400,7 +1401,7 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
       const filledVideoScaleX = containerWidth / barScaledVideoWidth;
       const filledVideoScaleY = containerHeight / barScaledVideoHeight;
       const filledVideoScale =
-        Math.round(Math.min(filledVideoScaleX, filledVideoScaleY) * 10000) /
+        Math.floor(Math.min(filledVideoScaleX, filledVideoScaleY) * 10000) /
         100;
 
       if (
@@ -1412,13 +1413,6 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
     }
 
     this.videoScale = videoScale;
-
-    // Video scale
-    setStyleProperty(
-      document.documentElement,
-      '--ytal-html5-video-player-overflow',
-      this.videoScale > 100 ? 'visible' : ''
-    );
   }
 
   // Bilibili stretches the video element to the size of the player and
@@ -1607,6 +1601,7 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
       this.resetVideoParentElemStyle();
     }
 
+    this.renderBurnedCaptions();
     this.videoOffset = this.getVideoRect();
     this.isFillingFullscreen =
       this.isFullscreen &&
@@ -1874,10 +1869,54 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
 
   resetVideoParentElemStyle() {
     this.shouldStyleVideoParentElem = false;
+    if (this.burnedCaptionLayer) this.burnedCaptionLayer.hidden = true;
     if (!this.videoContainerElem) return;
 
     setStyleProperty(this.videoContainerElem, '--ytal-video-clip-path', '');
     setStyleProperty(this.videoContainerElem, '--ytal-video-scale', '');
+  }
+
+  renderBurnedCaptions() {
+    const masks = this.burnedCaptionMasks;
+    const video = this.videoElem;
+    if (!masks?.length || !this.settings.enabled || !this.shouldStyleVideoParentElem ||
+        !this.settings.horizontalBarsClipPercentage || video.seeking) {
+      if (this.burnedCaptionLayer) this.burnedCaptionLayer.hidden = true;
+      return;
+    }
+
+    if (!this.burnedCaptionLayer) {
+      this.burnedCaptionLayer = document.createElement('div');
+      this.burnedCaptionLayer.className = 'ytal-burned-captions';
+      this.burnedCaptionLayer.setAttribute('aria-hidden', 'true');
+    }
+    const layer = this.burnedCaptionLayer;
+    if (layer.parentElement !== this.videoContainerElem) this.videoContainerElem.append(layer);
+    const content = this.getVideoContentRect();
+    const top = this.settings.horizontalBarsClipPercentage / 100;
+    const scale = this.videoScale / 100;
+    const midX = video.offsetWidth / 2;
+    const midY = video.offsetHeight / 2;
+    const imageTop = video.offsetTop + midY + (content.y + content.height * top - midY) * scale;
+    const imageBottom = video.offsetTop + midY + (content.y + content.height * (1 - top) - midY) * scale;
+    const gutter = Math.max(4, content.height * .025);
+    while (layer.children.length < masks.length) layer.append(document.createElement('canvas'));
+    for (const [index, canvas] of [...layer.children].entries()) {
+      const mask = masks[index];
+      canvas.hidden = !mask;
+      if (!mask) continue;
+      const w = mask.w / mask.width * content.width * scale;
+      const h = mask.h / mask.height * content.height * scale;
+      const x = this.isMirrored ? 1 - mask.x - mask.w / mask.width : mask.x;
+      canvas.style.left = `${video.offsetLeft + midX + (content.x + content.width * x - midX) * scale}px`;
+      canvas.style.top = `${mask.bottom ? imageBottom - gutter - h : imageTop + gutter}px`;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      if (canvas.width !== mask.w) canvas.width = mask.w;
+      if (canvas.height !== mask.h) canvas.height = mask.h;
+      canvas.getContext('2d').putImageData(new ImageData(mask.pixels, mask.w, mask.h), 0, 0);
+    }
+    layer.hidden = false;
   }
 
   updateFixedStyle() {
@@ -1956,127 +1995,6 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
         headerImageOpacity
       );
     }
-
-    // Shadows
-    const textAndBtnOnly = this.settings.surroundingContentTextAndBtnOnly;
-    const getFilterShadow = (color, size, opacity) =>
-      size && opacity
-        ? opacity > 0.5
-          ? `
-          drop-shadow(0 0 ${size}px rgba(${color},${opacity})) 
-          drop-shadow(0 0 ${size}px rgba(${color},${opacity}))
-        `
-          : `drop-shadow(0 0 ${size}px rgba(${color},${opacity * 2}))`
-        : '';
-    const getTextShadow = (color, size, opacity) =>
-      size && opacity
-        ? `
-        rgba(${color},${opacity}) 0 0 ${size * 2}px,
-        rgba(${color},${opacity}) 0 0 ${size * 2}px
-      `
-        : '';
-
-    if (this.mastheadElem) {
-      // Header shadow
-      const headerShadowSize = this.settings.headerShadowSize / 5;
-      const headerShadowOpacity = this.settings.headerShadowOpacity / 100;
-      this.mastheadElem.classList.toggle(
-        'ytal-header-shadow',
-        headerShadowSize && headerShadowOpacity
-      );
-
-      const getHeaderFilterShadow = (color) =>
-        getFilterShadow(color, headerShadowSize, headerShadowOpacity);
-      const getHeaderTextShadow = (color) =>
-        getTextShadow(color, headerShadowSize, headerShadowOpacity);
-
-      // Header !textAndBtnOnly
-      setStyleProperty(
-        this.mastheadElem,
-        `--ytal-filter-shadow`,
-        !textAndBtnOnly ? getHeaderFilterShadow('0,0,0') : ''
-      );
-      setStyleProperty(
-        this.mastheadElem,
-        `--ytal-filter-shadow-inverted`,
-        !textAndBtnOnly ? getHeaderFilterShadow('255,255,255') : ''
-      );
-
-      // Header textAndBtnOnly
-      setStyleProperty(
-        this.mastheadElem,
-        `--ytal-button-shadow`,
-        textAndBtnOnly ? getHeaderFilterShadow('0,0,0') : ''
-      );
-      setStyleProperty(
-        this.mastheadElem,
-        `--ytal-button-shadow-inverted`,
-        textAndBtnOnly ? getHeaderFilterShadow('255,255,255') : ''
-      );
-
-      setStyleProperty(
-        this.mastheadElem,
-        '--ytal-text-shadow',
-        textAndBtnOnly ? getHeaderTextShadow('0,0,0') : ''
-      );
-      setStyleProperty(
-        this.mastheadElem,
-        '--ytal-text-shadow-inverted',
-        textAndBtnOnly ? getHeaderTextShadow('255,255,255') : ''
-      );
-      this.mastheadElem.toggleAttribute(
-        'data-ambientlight-text-shadow',
-        textAndBtnOnly
-      );
-    }
-
-    // Content shadow
-    const contentShadowSize = this.settings.surroundingContentShadowSize / 5;
-    const contentShadowOpacity =
-      this.settings.surroundingContentShadowOpacity / 100;
-    const getContentFilterShadow = (color) =>
-      getFilterShadow(color, contentShadowSize, contentShadowOpacity);
-    const getContentTextShadow = (color) =>
-      getTextShadow(color, contentShadowSize, contentShadowOpacity);
-
-    // Content !textAndBtnOnly
-    setStyleProperty(
-      document.documentElement,
-      `--ytal-filter-shadow`,
-      !textAndBtnOnly ? getContentFilterShadow('0,0,0') : ''
-    );
-    setStyleProperty(
-      document.documentElement,
-      `--ytal-filter-shadow-inverted`,
-      !textAndBtnOnly ? getContentFilterShadow('255,255,255') : ''
-    );
-
-    // Content textAndBtnOnly
-    setStyleProperty(
-      document.documentElement,
-      `--ytal-button-shadow`,
-      textAndBtnOnly ? getContentFilterShadow('0,0,0') : ''
-    );
-    setStyleProperty(
-      document.documentElement,
-      `--ytal-button-shadow-inverted`,
-      textAndBtnOnly ? getContentFilterShadow('255,255,255') : ''
-    );
-
-    setStyleProperty(
-      document.documentElement,
-      '--ytal-text-shadow',
-      textAndBtnOnly ? getContentTextShadow('0,0,0') : ''
-    );
-    setStyleProperty(
-      document.documentElement,
-      '--ytal-text-shadow-inverted',
-      textAndBtnOnly ? getContentTextShadow('255,255,255') : ''
-    );
-    document.body.toggleAttribute(
-      'data-ambientlight-text-shadow',
-      textAndBtnOnly
-    );
 
     // Video shadow
     const videoShadowSize =
@@ -3114,10 +3032,13 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
   scheduleBarSizeDetection = async () => {
     try {
       this.checkGetImageDataAllowed();
-      if (!this.getImageDataAllowed) return;
+      if (!this.settings.autoCrop || !this.settings.enabled || !this.isOnVideoPage ||
+          this.videoElem.seeking || this.videoElem.readyState < 2 ||
+          this.videoElem.ended || this.isHidden || !this.getImageDataAllowed) return;
 
       await this.barDetection.detect(
         this.shouldDrawDirectlyFromVideoElem() ||
+          !this.projectorBuffer ||
           ((this.projectorBuffer.elem.height < 256 ||
             this.projectorBuffer.elem.width < 256) &&
             this.projectorBuffer.elem.height < this.videoElem.videoHeight)
@@ -3146,17 +3067,36 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
 
   scheduleBarSizeDetectionCallback = async (
     horizontalPercentage,
-    verticalPercentage
+    verticalPercentage,
+    subtitles
   ) => {
+    if (!this.settings.autoCrop || !this.settings.enabled || this.videoElem.seeking) return;
+
+    const crop = (horizontalPercentage ?? this.settings.horizontalBarsClipPercentage) / 100;
+    const captions = subtitles.map((strip) => strip.caption).filter(Boolean);
+    const captionDepth = (mask) => mask.bottom ? 1 - mask.y : mask.y + mask.h / mask.height;
+    // Preserve the upstream crop history. Once a strip cannot be separated,
+    // keep the horizontal bars for this video instead of toggling on each line.
+    const partiallyClipped = captions.some((mask) =>
+      captionDepth(mask) - mask.h / mask.height < crop && captionDepth(mask) > crop + 1e-6
+    );
+    if (crop && (partiallyClipped || subtitles.some((strip) => strip.protectedContent))) {
+      this.keepHorizontalBars = true;
+    }
+    const masks = this.keepHorizontalBars ? [] : captions.filter((mask) => captionDepth(mask) <= crop + 1e-6);
+    const scalingChanged = masks.length > 0 && !this.hasBurnedCaptions;
+    this.hasBurnedCaptions ||= masks.length > 0;
+    this.burnedCaptionMasks = masks;
+
     const horizontalBarChanged =
-      this.settings.detectHorizontalBarSizeEnabled &&
-      horizontalPercentage !== undefined &&
-      this.setHorizontalBars(horizontalPercentage);
+      (this.keepHorizontalBars || horizontalPercentage !== undefined) &&
+      this.setHorizontalBars(this.keepHorizontalBars ? 0 : horizontalPercentage);
     const verticalBarChanged =
-      this.settings.detectVerticalBarSizeEnabled &&
-      verticalPercentage !== undefined &&
-      this.setVerticalBars(verticalPercentage);
-    if (!horizontalBarChanged && !verticalBarChanged) return;
+      verticalPercentage !== undefined && this.setVerticalBars(verticalPercentage);
+    if (!horizontalBarChanged && !verticalBarChanged && !scalingChanged) {
+      this.renderBurnedCaptions();
+      return;
+    }
 
     this.sizesChanged = true;
     await this.optionalFrame();
@@ -3250,7 +3190,7 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
   async disable() {
     if (this.pendingStart) return;
     this.settings.set('enabled', false, true);
-
+    this.barDetection.cancel();
     await this.hide();
   }
 
@@ -3264,10 +3204,9 @@ Video ready state: ${readyStateToString(videoElem?.readyState)}`);
     this.nextFrameTime = undefined;
     this.ambientlightVideoDroppedFrameCount = 0;
     this.buffersCleared = true; // Prevent old frame from preventing the new frame from being drawn
-    this.barDetection.reset();
+    this.barDetection.cancel();
 
     this.checkGetImageDataAllowed();
-    await this.resetSettingsIfNeeded();
     await this.updateView(true);
 
     this.pendingStart = true;

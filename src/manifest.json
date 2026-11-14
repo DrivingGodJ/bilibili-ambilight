@@ -1,9 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Bilibili 環境光",
-  "description": "在 Bilibili 影片周圍加上環境光，看影片更有沉浸感！（非官方擴充功能，改編自 Wessel Kroos 的 Ambient light for YouTube）",
+  "description": "讓 Bilibili 影片的色彩延伸到播放器四周。支援自動去黑邊、等比縮放與跟隨系統深淺色。（非官方擴充功能）",
   "version": "0.0.0",
-  "version_name": "0.1.5 + system theme",
   "homepage_url": "https://github.com/DrivingGodJ/bilibili-ambilight",
   "icons": {
     "16": "images/icon-16.png",

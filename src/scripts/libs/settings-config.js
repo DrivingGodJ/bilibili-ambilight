@@ -1,6 +1,13 @@
 import { supportsColorMix, supportsWebGL } from './generic';
 import { getBrowser } from './utils';
 
+export const THEME_LIGHT = -1;
+export const THEME_DARK = 1;
+export const THEME_SYSTEM = 2;
+
+export const normalizeTheme = (value) =>
+  value === THEME_LIGHT || value === THEME_DARK ? value : THEME_SYSTEM;
+
 const SettingsConfig = [
   {
     type: 'section',
@@ -634,7 +641,7 @@ const SettingsConfig = [
     label: '擴散範圍',
     description: '會使用：GPU 效能',
     type: 'list',
-    default: 17,
+    default: 28.3,
     min: 0,
     max: 400,
     step: 0.1,
@@ -820,15 +827,14 @@ const SettingsConfig = [
     label: '外觀（主題）',
     type: 'list',
     manualinput: false,
-    default: 1,
+    default: THEME_SYSTEM,
     min: -1,
     max: 2,
     step: 1,
     snapPoints: [
-      { value: -1, label: '淺色' },
-      { value: 0, label: '跟隨 B 站' },
-      { value: 1, label: '深色' },
-      { value: 2, label: '跟隨系統' },
+      { value: THEME_SYSTEM, label: '跟隨系統' },
+      { value: THEME_LIGHT, label: '淺色' },
+      { value: THEME_DARK, label: '深色' },
     ],
   },
   {

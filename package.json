@@ -1,7 +1,7 @@
 {
   "name": "bilibili-ambientlight",
-  "version": "0.1.5",
-  "description": "This browser extension adds ambient light to the videos you view on Bilibili. Based on Ambient light for YouTube by Wessel Kroos.",
+  "version": "0.1.6",
+  "description": "Dynamic ambient light for Bilibili videos, with automatic black-bar removal, proportional zoom, and system-aware themes.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DrivingGodJ/bilibili-ambilight.git"
@@ -19,7 +19,7 @@
     "outputFile": "./bilibili-ambilight.user.js"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules scripts/test-system-theme.mjs",
+    "test": "node --experimental-vm-modules --test scripts/test-system-theme.mjs scripts/test-safe-crop.mjs",
     "build:manifest": "node manifest-copy.js",
     "build:html": "copyfiles -u 1 src/options.html dist",
     "build:images": "copyfiles -u 2 src/images/* dist/images",
