@@ -35,7 +35,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Test system theme switching
+      - name: Run regression tests
         run: npm test
 
       - name: Build and package
@@ -54,6 +54,7 @@ jobs:
           npm run build:userscript
           cp bilibili-ambilight.user.js release/
 
+          (cd release && sha256sum *.zip *.user.js > SHA256SUMS.txt)
           ls -l release
 
       - uses: actions/upload-artifact@v7
@@ -69,6 +70,10 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
       - uses: actions/download-artifact@v8
         with:
           name: bilibili-ambilight
@@ -78,23 +83,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" release/*.zip release/bilibili-ambilight.user.js \
+          release_notes=()
+          if [ -f ".github/release-notes/$GITHUB_REF_NAME.md" ]; then
+            release_notes=(--notes-file ".github/release-notes/$GITHUB_REF_NAME.md")
+          fi
+          gh release create "$GITHUB_REF_NAME" release/*.zip release/bilibili-ambilight.user.js release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "$GITHUB_REF_NAME" \
-            --generate-notes \
-            --notes "$(cat <<'EOF'
-          ## 安裝
-
-          本版新增「跟隨系統」深淺色主題：請在「基本設定 → 外觀（主題）」選擇「跟隨系統」。系統主題變更會自動同步，不需重新整理；原有主題選項與預設值保留。
-
-          **Chrome / Edge**：下載 `-chrome.zip` 並解壓縮，開啟 `chrome://extensions`，打開「開發人員模式」，點「載入未封裝項目」並選擇解壓縮後的資料夾。
-
-          **Firefox**：下載 `-firefox.zip`，開啟 `about:debugging#/runtime/this-firefox`，點「載入暫用附加元件」並選擇 zip 檔。這個版本沒有經過 Mozilla 簽署，重新啟動 Firefox 後會被移除。
-
-          **使用者腳本（Tampermonkey 等）**：請用 README 裡的安裝連結安裝，之後才會自動更新。直接安裝這裡的 `bilibili-ambilight.user.js` 不會自動更新。
-          EOF
-          )"
+            --generate-notes "${release_notes[@]}"
 
       # The install links of the userscript point to this branch (directly and through the jsDelivr mirror),
       # so that userscript managers only update to released versions.
@@ -102,15 +99,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir userscript
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q "$remote" refs/heads/userscript
+          git worktree add -q --detach userscript FETCH_HEAD
           cp release/bilibili-ambilight.user.js userscript/
           cd userscript
-          git init -q -b userscript
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add bilibili-ambilight.user.js
           git commit -q -m "Userscript $GITHUB_REF_NAME"
-          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" userscript
+          git push -q "$remote" HEAD:refs/heads/userscript
 
       - name: Purge the jsDelivr cache of the userscript
         continue-on-error: true

@@ -2,6 +2,8 @@
 
 # Bilibili Ambilight
 
+<img src="src/images/icon-128.png" width="64" height="64" alt="Bilibili Ambilight icon">
+
 Let the colors in a video extend beyond the player. As the picture changes, ambient light moves with it, blending the video into the surrounding page.
 
 ## Light that follows the picture
@@ -10,14 +12,14 @@ Colors sampled from the playing video create a dynamic glow around the player. I
 
 ## Bring the page into the scene
 
-The header, comment controls and sidebar can blend into the background too. Adjust their opacity to keep as much of the surrounding interface as you prefer.
+The header, danmaku controls and sidebar blend into the background. Local shadows and glows keep text and small icons readable.
 
-Choose a theme that follows Bilibili, stays light or dark, or follows the system. System mode responds to appearance changes in real time; disabling ambient light restores Bilibili's original theme.
+Follow the system theme by default, or choose light or dark. Disabling ambient light restores Bilibili's original theme.
 
 ## Watch your way
 
-- Detect black bars, then crop and zoom when needed.
-- Adjust the effect from the player or toggle it with keyboard shortcuts.
+- Detect black bars and zoom proportionally while keeping the full picture visible. Burned-in subtitles that can be separated are overlaid with a black outline.
+- Toggle ambient light and automatic cropping or choose an appearance from the player.
 - Use an extension or userscript, with Simplified Chinese, Traditional Chinese, English, Japanese and Korean interfaces.
 
 ## Try it
@@ -31,7 +33,7 @@ See the [user guide](docs/GUIDE.en.md) for Chrome, Edge and Firefox installation
 | Topic | Documentation |
 | --- | --- |
 | Installation, settings and shortcuts | [User guide](docs/GUIDE.en.md) |
-| Builds, localization and complete features | [Detailed reference (Traditional Chinese)](docs/readme-reference.zh-TW.md) |
+| Earlier features and development notes | [Archived reference (Traditional Chinese)](docs/readme-reference.zh-TW.md) |
 | Privacy and data | [Privacy policy](PRIVACY-POLICY.md) |
 | Feedback | [Issues](https://github.com/DrivingGodJ/bilibili-ambilight/issues) |
 

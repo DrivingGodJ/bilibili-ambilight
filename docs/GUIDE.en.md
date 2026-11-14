@@ -10,20 +10,18 @@
 
 **Userscript:** install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/), then open the [release script](https://raw.githubusercontent.com/DrivingGodJ/bilibili-ambilight/userscript/bilibili-ambilight.user.js). A [jsDelivr mirror](https://cdn.jsdelivr.net/gh/DrivingGodJ/bilibili-ambilight@userscript/bilibili-ambilight.user.js) is available if Raw is inaccessible. Updates use the address chosen at installation. Chromium browsers also need userscript execution enabled as instructed by the manager.
 
-See the development section and detailed reference for Firefox temporary loading and platform builds.
+See the development section for Firefox temporary loading and platform builds.
 
 ## Usage
 
-Open settings through the ambient-light icon to the left of Bilibili's gear. Select Follow system under Basic settings → Appearance (theme). Disabling ambient lighting restores Bilibili's original theme.
+Open settings through the ambient-light icon to the left of Bilibili's gear. Toggle ambient light and automatic cropping, or choose Follow system, Light or Dark under Appearance. Disabling ambient light restores Bilibili's original theme.
 
 | Default key | Action |
 | --- | --- |
 | `G` | Toggle ambient lighting |
-| `B` | Toggle top/bottom cropping; off by default |
-| `V` | Toggle left/right cropping; on by default |
-| `H` | Zoom to fill the cropped area |
+| `B` | Toggle automatic cropping |
 
-DRM videos and some HEVC players using `<bwp-video>` are unsupported. Cropping can remove burned-in subtitles. The userscript uses its manager's menu for settings import, export and reset; it has no extension toolbar or options page.
+After cropping, the video scales proportionally and may leave space when aspect ratios differ. Burned-in subtitles that can be separated from a black bar are overlaid with a black outline. The userscript manager menu opens the same settings panel. DRM videos and some HEVC players using `<bwp-video>` are unsupported.
 
 ## Development and checks
 
@@ -43,7 +41,7 @@ Automated tests do not replace installation in a real browser or Windows system-
 
 ## Documentation and support
 
-- [Usage, localization and source layout (Traditional Chinese)](../docs/readme-reference.zh-TW.md)
+- [Archived usage, localization and source layout (Traditional Chinese)](readme-reference.zh-TW.md)
 - [Privacy policy](../PRIVACY-POLICY.md)
 - [Report an issue](https://github.com/DrivingGodJ/bilibili-ambilight/issues)
 
