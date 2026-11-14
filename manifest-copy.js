@@ -1,4 +1,4 @@
-import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import packageJson from './package.json' with { type: 'json' };
 
 // Usage: node manifest-copy.js [firefox]
@@ -14,5 +14,6 @@ if (isFirefox) {
   };
 }
 
-if (!existsSync('dist')) mkdirSync('dist');
+mkdirSync('dist', { recursive: true });
+cpSync('src/_locales', 'dist/_locales', { recursive: true });
 writeFileSync('dist/manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);

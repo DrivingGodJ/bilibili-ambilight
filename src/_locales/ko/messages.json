@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Bilibili 환경광"
+  },
+  "extensionDescription": {
+    "message": "Bilibili 영상 색상을 플레이어 주변으로 확장합니다. 검은 여백 자동 제거, 비율 유지 확대, 시스템 테마를 지원합니다. (비공식 확장 프로그램)"
+  }
+}

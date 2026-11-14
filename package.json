@@ -1,6 +1,6 @@
 {
   "name": "bilibili-ambientlight",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Dynamic ambient light for Bilibili videos, with automatic black-bar removal, proportional zoom, and system-aware themes.",
   "repository": {
     "type": "git",

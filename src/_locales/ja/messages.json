@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Bilibili 環境光"
+  },
+  "extensionDescription": {
+    "message": "Bilibili の動画の色をプレーヤーの周囲に広げます。黒帯の自動除去、アスペクト比を保つ拡大、システムの外観設定に対応。（非公式拡張機能）"
+  }
+}

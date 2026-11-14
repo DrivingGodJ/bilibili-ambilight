@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Bilibili 環境光",
-  "description": "讓 Bilibili 影片的色彩延伸到播放器四周。支援自動去黑邊、等比縮放與跟隨系統深淺色。（非官方擴充功能）",
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "zh_CN",
   "version": "0.0.0",
   "homepage_url": "https://github.com/DrivingGodJ/bilibili-ambilight",
   "icons": {

@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Bilibili 環境光"
+  },
+  "extensionDescription": {
+    "message": "讓 Bilibili 影片的色彩延伸到播放器四周。支援自動去黑邊、等比縮放與跟隨系統深淺色。（非官方擴充功能）"
+  }
+}
