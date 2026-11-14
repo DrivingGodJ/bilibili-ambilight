@@ -4,7 +4,7 @@
 // @name:zh-CN   Bilibili 环境光
 // @name:en      Ambient light for Bilibili
 // @namespace    https://github.com/DrivingGodJ/bilibili-ambilight
-// @version      0.1.6
+// @version      0.1.7
 // @description  讓 Bilibili 影片的色彩延伸到播放器四周。支援自動去黑邊、等比縮放與跟隨系統深淺色。（非官方）
 // @description:zh-CN  让 Bilibili 视频的色彩延伸到播放器四周。支持自动去黑边、等比缩放和跟随系统深浅色。（非官方）
 // @description:en  Extends video colors around the Bilibili player with ambient light. Includes automatic black-bar removal, proportional zoom, and system-aware themes. Unofficial.
@@ -1854,7 +1854,7 @@ ${t('另一個可能的解決方法是關閉「品質與效能 > WebGL 渲染器
 
   var buildTarget = "userscript";
 
-  var buildVersion = "0.1.6";
+  var buildVersion = "0.1.7";
 
   const globalScope = globalThis;
   const isExtensionBuild = buildTarget === 'extension';
