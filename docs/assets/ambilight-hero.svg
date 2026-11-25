@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title">
+  <title id="title">Bilibili Ambilight</title>
+  <defs>
+    <linearGradient id="panel" x2="1" y2="1">
+      <stop stop-color="#141e31"/>
+      <stop offset="1" stop-color="#0e101b"/>
+    </linearGradient>
+    <radialGradient id="cyan">
+      <stop stop-color="#46cfff" stop-opacity=".54"/>
+      <stop offset="1" stop-color="#46cfff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pink">
+      <stop stop-color="#ff78cc" stop-opacity=".49"/>
+      <stop offset="1" stop-color="#ff78cc" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="screen" x1="720" y1="77" x2="1032" y2="222" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102536"/>
+      <stop offset=".48" stop-color="#161d35"/>
+      <stop offset="1" stop-color="#382238"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="720" x2="1032" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#65dbff"/>
+      <stop offset=".51" stop-color="#3b536c"/>
+      <stop offset="1" stop-color="#f68bcd"/>
+    </linearGradient>
+    <clipPath id="panel-clip"><rect x="1" y="1" width="1198" height="298" rx="28"/></clipPath>
+  </defs>
+  <style>
+    .name { font: 700 65px "Segoe UI", Arial, sans-serif; letter-spacing: -1.5px }
+    .light { animation: pulse 6s ease-in-out infinite alternate }
+    .pink { animation-delay: -2s }
+    @keyframes pulse {
+      from { opacity: .52 }
+      to { opacity: .96 }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .light { animation: none }
+    }
+  </style>
+  <g clip-path="url(#panel-clip)">
+    <path d="M0 0h1200v300H0z" fill="url(#panel)"/>
+    <ellipse class="light" cx="742" cy="118" rx="258" ry="175" fill="url(#cyan)" opacity=".8"/>
+    <ellipse class="light pink" cx="1014" cy="194" rx="244" ry="174" fill="url(#pink)" opacity=".76"/>
+  </g>
+  <rect x="1" y="1" width="1198" height="298" rx="28" fill="none" stroke="#36465b" stroke-width="2"/>
+  <text class="name" x="78" y="138" fill="#f5f8ff">Bilibili</text>
+  <text class="name" x="78" y="212" fill="#f5f8ff">Ambilight</text>
+  <rect x="722" y="73" width="310" height="155" rx="18" fill="url(#screen)" stroke="url(#edge)" stroke-width="3"/>
+  <path d="M713 126V83q0-20 20-20h46" fill="none" stroke="#65dbff" stroke-linecap="round" stroke-width="4"/>
+  <path d="M1041 175v43q0 20-20 20h-46" fill="none" stroke="#f68bcd" stroke-linecap="round" stroke-width="4"/>
+  <path d="M855 120v60l49-30z" fill="#f5f8ff"/>
+</svg>

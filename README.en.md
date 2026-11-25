@@ -1,40 +1,38 @@
-[简体中文](README.md) | **English**
+[简体中文](README.md) · **English**
 
 # Bilibili Ambilight
 
-<img src="src/images/icon-128.png" width="64" height="64" alt="Bilibili Ambilight icon">
+<img src="docs/assets/ambilight-hero.svg" width="100%" alt="Bilibili Ambilight artwork with cyan and pink light around a video player">
 
-Let the colors in a video extend beyond the player. As the picture changes, ambient light moves with it, blending the video into the surrounding page.
+Extend the colors of a Bilibili video beyond the player. Ambient light follows the picture as it changes, blending the header, danmaku controls and sidebar into the background.
 
-## Light that follows the picture
+[Download the extension](https://github.com/DrivingGodJ/bilibili-ambilight/releases/latest) · [Install the userscript](https://raw.githubusercontent.com/DrivingGodJ/bilibili-ambilight/userscript/bilibili-ambilight.user.js) · [User guide](docs/GUIDE.en.md)
 
-Colors sampled from the playing video create a dynamic glow around the player. It works with regular videos, multipart videos, series and playlists, adapting as you switch between normal, wide and fullscreen viewing.
+## In the player
 
-## Bring the page into the scene
+![A Bilibili video in dark mode, with ambient light around the player and the Ambilight settings open in the lower right](docs/assets/ambilight-in-player.webp)
 
-The header, danmaku controls and sidebar blend into the background. Local shadows and glows keep text and small icons readable.
+Click the ambient light icon next to the player gear to toggle ambient light and automatic cropping or change the appearance.
+The screenshot features [DrivingGodJ’s graduation video](https://www.bilibili.com/video/BV139jB6BELL/).
 
-Follow the system theme by default, or choose light or dark. Disabling ambient light restores Bilibili's original theme.
+## Playback features
 
-## Watch your way
+- **Dynamic ambient light** · Video colors follow the picture and the size of the player. Local shadows and glows keep text and small icons readable.
+- **Automatic black-bar removal** · Detect horizontal or vertical bars and scale proportionally to keep the full picture visible. Burned-in subtitles that can be separated from a black bar are overlaid with a black outline.
+- **Light and dark appearance** · Follow the system by default, or select light or dark. Press `G` to toggle ambient light and `B` to toggle automatic cropping.
 
-- Detect black bars and zoom proportionally while keeping the full picture visible. Burned-in subtitles that can be separated are overlaid with a black outline.
-- Toggle ambient light and automatic cropping or choose an appearance from the player.
-- Use an extension or userscript, with Simplified Chinese, Traditional Chinese, English, Japanese and Korean interfaces.
+## Get started
 
-## Try it
+- **Chrome / Edge** · Download and extract `-chrome.zip` from Releases. Enable Developer mode on the extensions page, then load the extracted folder.
+- **Firefox** · Download `-firefox.zip` from Releases and temporarily load it from Firefox's debugging page.
+- **Userscript** · Install Tampermonkey or Violentmonkey, open the userscript link above, then reload a Bilibili video page.
 
-[Download the extension](https://github.com/DrivingGodJ/bilibili-ambilight/releases/latest) · [Install the userscript](https://raw.githubusercontent.com/DrivingGodJ/bilibili-ambilight/userscript/bilibili-ambilight.user.js)
+See the [user guide](docs/GUIDE.en.md) for installation, shortcuts and builds. The interface supports Simplified Chinese, Traditional Chinese, English, Japanese and Korean.
 
-See the [user guide](docs/GUIDE.en.md) for Chrome, Edge and Firefox installation and userscript-manager setup.
+## Documentation and feedback
 
-## Explore further
+- [Archived development reference (Traditional Chinese)](docs/readme-reference.zh-TW.md)
+- [Privacy policy](PRIVACY-POLICY.md)
+- [Report an issue](https://github.com/DrivingGodJ/bilibili-ambilight/issues)
 
-| Topic | Documentation |
-| --- | --- |
-| Installation, settings and shortcuts | [User guide](docs/GUIDE.en.md) |
-| Earlier features and development notes | [Archived reference (Traditional Chinese)](docs/readme-reference.zh-TW.md) |
-| Privacy and data | [Privacy policy](PRIVACY-POLICY.md) |
-| Feedback | [Issues](https://github.com/DrivingGodJ/bilibili-ambilight/issues) |
-
-A community fork of [iceorange-dev's Bilibili port](https://github.com/iceorange-dev/bilibili-ambilight), originating from [Wessel Kroos's work](https://github.com/WesselKroos/youtube-ambilight). [MIT License](LICENSE); not affiliated with Bilibili or YouTube.
+A community project based on [iceorange-dev's Bilibili port](https://github.com/iceorange-dev/bilibili-ambilight) and [Wessel Kroos's original YouTube extension](https://github.com/WesselKroos/youtube-ambilight), released under the [MIT License](LICENSE).
