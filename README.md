@@ -10,10 +10,10 @@
 
 ## 界面实拍
 
-![B 站视频深色页面，环境光映在播放器四周，右下角展开环境光设置](docs/assets/ambilight-in-player.webp)
+![青色、粉色和黄色从流体画面的边缘映到播放器外，右下角展开环境光设置](docs/assets/ambilight-in-player.webp)
 
 点击播放设置齿轮左侧的环境光图标，就能开关环境光、自动去黑边，或选择界面外观。
-截图取自[《什么毕业视频的后劲这么大？》](https://www.bilibili.com/video/BV139jB6BELL/)。
+截图取自 Roman De Giuli 的流体艺术演示 [Magic Fluids（B 站）](https://www.bilibili.com/video/BV1sB4y1d7Ut/?t=92)。
 
 ## 播放体验
 

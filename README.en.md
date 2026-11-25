@@ -10,10 +10,10 @@ Extend the colors of a Bilibili video beyond the player. Ambient light follows t
 
 ## In the player
 
-![A Bilibili video in dark mode, with ambient light around the player and the Ambilight settings open in the lower right](docs/assets/ambilight-in-player.webp)
+![Cyan, pink and yellow from a fluid art video spill beyond the player, with Ambilight settings open in the lower right](docs/assets/ambilight-in-player.webp)
 
 Click the ambient light icon next to the player gear to toggle ambient light and automatic cropping or change the appearance.
-The screenshot features [DrivingGodJ’s graduation video](https://www.bilibili.com/video/BV139jB6BELL/).
+The screenshot features Roman De Giuli’s fluid art demo [Magic Fluids on Bilibili](https://www.bilibili.com/video/BV1sB4y1d7Ut/?t=92).
 
 ## Playback features
 
